@@ -30,3 +30,15 @@ Vous devez implémenter une **API web** en Java qui répond au scénario suivant
     - `PostgreSQL Driver`
 - **Version Java** : JDK 17
 - **Build Tool** : Gradle
+
+### Squelette de l'exercice.
+
+### Modélisation 
+
+### Flux d'authentifcation et Configuration de spring Security.
+
+### Lancement du développement.
+
+
+### Listes des routes finales.
+
