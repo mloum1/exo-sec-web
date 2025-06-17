@@ -1,12 +1,14 @@
 package com.exercice_sec.controllers;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.exercice_sec.models.Utilisateur;
+import com.exercice_sec.services.JwtService;
 import com.exercice_sec.services.UtilisateurCustomService;
 
 /**
@@ -16,15 +18,24 @@ import com.exercice_sec.services.UtilisateurCustomService;
 @RequestMapping("/api/utilisateur")
 public class UtilisateurController {
 
+
+	private JwtService jwtService;
 	private final UtilisateurCustomService utilisateurService;
 
-	public UtilisateurController(UtilisateurCustomService utilisateurService) {
+	public UtilisateurController(JwtService jwtService,UtilisateurCustomService utilisateurService) {
+		this.jwtService = jwtService;
 		this.utilisateurService = utilisateurService;
 	}
 
 	@PostMapping("/ajouter")
+	@PreAuthorize("hasRole('ADMIN')")
 	public Utilisateur ajouterUtilisateur (@RequestBody Utilisateur utilisateur) {
 		return utilisateurService.ajouterUtilisateur(utilisateur);
+	}
+
+	@PostMapping("/login")
+	public String login(Authentication authentication) {
+		return jwtService.genererToken(authentication);
 	}
 
 }
