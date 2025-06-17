@@ -1,3 +1,5 @@
+package com.exercice_sec.controllers;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +18,11 @@ public class ClientController {
     @GetMapping("/client/{id}")
     public void recupererClient() {
 
+    }
+
+    @GetMapping("/private/bye")
+    public String sayBye(){
+        return "You are authenticated";
     }
 
     @GetMapping("/public/hello")

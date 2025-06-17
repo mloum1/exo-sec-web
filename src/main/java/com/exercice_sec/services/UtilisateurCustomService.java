@@ -1,0 +1,50 @@
+package com.exercice_sec.services;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.exercice_sec.models.Utilisateur;
+import com.exercice_sec.repositories.UtilisateurRepository;
+
+@Service
+public class UtilisateurCustomService implements UserDetailsService {
+
+	private final BCryptPasswordEncoder passwordEncoder;
+	private final UtilisateurRepository utilisateurRepository;
+
+	public UtilisateurCustomService(BCryptPasswordEncoder encoder , UtilisateurRepository utilisateurRepository ) {
+		this.passwordEncoder = encoder;
+		this.utilisateurRepository = utilisateurRepository;
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		Utilisateur utilisateur = utilisateurRepository.findByNom(username).orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable : " + username));
+		return new User(utilisateur.getNom(), utilisateur.getPassword(), this.buildAuthorities());
+	}
+
+	private List<GrantedAuthority> buildAuthorities() {
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		authorities.add(new SimpleGrantedAuthority("ROlE_USER"));
+		return authorities;
+	}
+
+	/**
+	 * Permet d'ajouter un utilisateur à la base de données.
+	 * @param utilisateur l'utilisateur à ajouter dans la base de données.
+	 * @return l'utilisateur sauvegardé.
+	 */
+	public Utilisateur ajouterUtilisateur (Utilisateur utilisateur) {
+		utilisateur.setPassword(passwordEncoder.encode(utilisateur.getPassword()));
+		return utilisateurRepository.save(utilisateur);
+	}
+}
