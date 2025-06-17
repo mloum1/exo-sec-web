@@ -3,15 +3,15 @@ package com.exercice_sec.models;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -31,18 +31,18 @@ public class Utilisateur extends Personne {
 	@Column(name = "id_utilisateur")
 	private Long id;
 
-	@Column(name= "mot_de_passe", unique = true, nullable = false)
+	@Column(name = "mot_de_passe", nullable = false)
 	private String password;
 
 	/**
 	 * Un utilisateur peut avoir plusieurs rôles.
+	 * Ils sont stockés sous forme de liste de chaînes.
 	 */
-	@ManyToMany(fetch = FetchType.EAGER)
-	// Table d'association
-	@JoinTable(
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(
 			name = "utilisateur_roles",
-			joinColumns = @JoinColumn(name = "utilisateur_id", referencedColumnName = "id_utilisateur"),
-			inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id_utilisateur_role")
+			joinColumns = @JoinColumn(name = "utilisateur_id")
 	)
-	private Set<UtilisateurRole> roles = new HashSet<>();
+	@Column(name = "role")
+	private Set<String> roles = new HashSet<>();
 }

@@ -19,7 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(jsr250Enabled = true)
 @Configuration
 public class SecurityConfig {
     @Bean
@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/utilisateur/**").authenticated()
+                        .requestMatchers("/api/utilisateur/ajouter").hasRole("ADMIN")
                         .requestMatchers("/api/private/**").authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .build();
