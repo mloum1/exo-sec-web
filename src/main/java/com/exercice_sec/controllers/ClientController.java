@@ -41,6 +41,15 @@ public class ClientController {
         return clientService.ajouterClient(client);
     }
 
+    @PostMapping("/ajout/clients")
+    @PreAuthorize("isAuthenticated()")
+    public Collection<Client> ajouterClients(@RequestBody Collection<Client> clients) {
+        return clients.stream()
+                .map(clientService::ajouterClient)
+                .toList();
+    }
+
+
     @DeleteMapping("/suppression/client/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public void supprimerClient(@PathVariable Long id) {

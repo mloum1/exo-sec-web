@@ -21,10 +21,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.exercice_sec.services.JwtService;
+import com.exercice_sec.services.UtilisateurCustomService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @EnableWebSecurity
@@ -35,17 +38,24 @@ public class SecurityConfig {
     @Value("${app.jwt.secret}")
     private String key;
 
-    @Bean JwtEncoder jwtEncoder() {
+    @Bean
+    JwtEncoder jwtEncoder() {
         return new NimbusJwtEncoder(new ImmutableSecret<>(key.getBytes()));
     }
 
-    @Bean JwtDecoder jwtDecoder() {
+    @Bean
+    JwtDecoder jwtDecoder() {
         SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), 0, key.getBytes().length, "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS256).build();
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    JwtTokenFilter jwtTokenFilter(JwtService jwtService, UtilisateurCustomService utilisateurCustomService) {
+        return new JwtTokenFilter(jwtService, utilisateurCustomService);
+    }
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
         return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -53,30 +63,38 @@ public class SecurityConfig {
                         .requestMatchers("/api/client/**").permitAll()
                         .requestMatchers("/api/clients").permitAll()
                         .requestMatchers("/api/utilisateur/login").permitAll()
+                        .requestMatchers("/api/utilisateur/loginWithCustomJwt").permitAll()
                         .requestMatchers("/api/ajout/client").authenticated()
+                        .requestMatchers("/api/ajout/clients").authenticated()
                         .requestMatchers("/api/suppression/client/**").hasRole("ADMIN")
-                        .requestMatchers("/api/utilisateur/ajouter").hasRole("ADMIN"))
-                // mode oauth2
-                .oauth2ResourceServer(auth2 -> auth2.jwt((Customizer.withDefaults())))
-                // mode basic
+                        .requestMatchers("/api/utilisateur/ajouter").hasRole("ADMIN")
+                )
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2ResourceServer(auth2 -> auth2.jwt(Customizer.withDefaults()))
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }
 
-    @Bean BCryptPasswordEncoder passwordEncoder() {
+    @Bean
+    BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    AuthenticationManager authenticationManager(BCryptPasswordEncoder encoder, UserDetailsService userDetailsService, HttpSecurity httpSecurity) throws Exception {
+    AuthenticationManager authenticationManager(
+            BCryptPasswordEncoder encoder,
+            UserDetailsService userDetailsService,
+            HttpSecurity httpSecurity
+    ) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(encoder);
         return authenticationManagerBuilder.build();
     }
 
-    @Bean CorsConfigurationSource corsConfigurationSource() {
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:9090"));
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

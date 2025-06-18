@@ -37,6 +37,8 @@ Vous devez implémenter une **API web** en Java qui répond au scénario suivant
 
 ### Flux d'authentifcation et Configuration de spring Security.
 
+#### Les types d'authentificatication
+
 ### Lancement du développement.
 
 

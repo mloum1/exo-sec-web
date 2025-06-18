@@ -33,9 +33,23 @@ public class UtilisateurController {
 		return utilisateurService.ajouterUtilisateur(utilisateur);
 	}
 
+	/**
+	 * Permet d'authentifier avec Oauth2 resource server
+	 * @param authentication l'authentification.
+	 * @return le token généré.
+	 */
 	@PostMapping("/login")
 	public String login(Authentication authentication) {
 		return jwtService.genererToken(authentication);
 	}
 
+	/**
+	 * Permet de s'authentifier avec un jwt customiser suivant la logique de filtre.
+	 * @param authentication l'authentification.
+	 * @return Le token généré.
+	 */
+	@PostMapping("/loginWithCustomJwt")
+	public String loginwithCustomJwt(Authentication authentication) {
+		return jwtService.genererTokenCustomiser(authentication);
+	}
 }
